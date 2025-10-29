@@ -1,8 +1,15 @@
-FROM python:3.10-slim
+# Используем официальный Python
+FROM python:3.11-slim
 
+# Устанавливаем рабочую директорию
 WORKDIR /app
-COPY . .
 
+# Копируем файлы проекта в контейнер
+COPY requirements.txt .
+COPY weather_bot.py .
+
+# Устанавливаем зависимости
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Команда запуска бота
 CMD ["python3", "weather_bot.py"]
