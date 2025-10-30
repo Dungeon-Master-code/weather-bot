@@ -82,7 +82,7 @@ def webhook():
         return "Unsupported Media Type", 415
 
 # --- Точка входа ---
-if name == "main":
+if __name__ == "__main__":
     # При локальном запуске можно использовать polling:
     # bot.polling(none_stop=True)
 
