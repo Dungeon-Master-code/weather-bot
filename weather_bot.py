@@ -12,20 +12,20 @@ WEATHER_API_KEY =  os.getenv("WEATHER_API")
 bot = telebot.TeleBot(BOT_TOKEN)
 app = Flask(__name__)
 
-# === Данные городов ===
+# --- Города для выбора ---
 CITIES = {
     "Москва": {"lat": 55.7558, "lon": 37.6173},
     "Санкт-Петербург": {"lat": 59.9343, "lon": 30.3351}
 }
 
-# === Клавиатура ===
+# --- Клавиатура ---
 def city_keyboard():
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     buttons = [types.KeyboardButton(name) for name in CITIES.keys()]
     keyboard.add(*buttons)
     return keyboard
 
-# === Команда /start ===
+# --- Команда /start ---
 @bot.message_handler(commands=["start"])
 def start(message):
     bot.send_message(
@@ -34,7 +34,7 @@ def start(message):
         reply_markup=city_keyboard()
     )
 
-# === Когда пользователь выбирает город ===
+# --- Когда пользователь выбирает город ---
 @bot.message_handler(func=lambda message: message.text in CITIES)
 def show_weather(message):
     city = message.text
@@ -65,22 +65,26 @@ def show_weather(message):
     else:
         bot.send_message(message.chat.id, "⚠️ Не удалось получить погоду. Попробуй позже.", reply_markup=city_keyboard())
 
-# === Обработка прочего ===
+# --- Обработка неверного ввода ---
 @bot.message_handler(func=lambda message: True)
 def fallback(message):
     bot.send_message(message.chat.id, "Выбери город кнопкой 👇", reply_markup=city_keyboard())
 
-# === Flask: принимаем запросы от Telegram ===
-@app.route(f"/{BOT_TOKEN}", methods=["POST"])
+# --- Flask webhook ---
+@app.route("/webhook", methods=["POST"])
 def webhook():
-    update = telebot.types.Update.de_json(request.stream.read().decode("utf-8"))
-    bot.process_new_updates([update])
-    return "OK", 200
+    if request.headers.get("content-type") == "application/json":
+        json_string = request.get_data().decode("utf-8")
+        update = telebot.types.Update.de_json(json_string)
+        bot.process_new_updates([update])
+        return "OK", 200
+    else:
+        return "Unsupported Media Type", 415
 
-@app.route("/")
-def index():
-    return "Бот работает!", 200
+# --- Точка входа ---
+if name == "main":
+    # При локальном запуске можно использовать polling:
+    # bot.polling(none_stop=True)
 
-# === Запуск вебхука ===
-if __name__ == "__main__":
+    # Flask для webhook (если Railway или ngrok)
     app.run(host="0.0.0.0", port=8080)
