@@ -6,10 +6,12 @@ WORKDIR /app
 
 # Копируем файлы проекта в контейнер
 COPY requirements.txt .
-COPY weather_bot.py .
+
 
 # Устанавливаем зависимости
 RUN pip install --no-cache-dir -r requirements.txt
+
+COPY weather_bot.py .
 
 # Команда запуска бота
 CMD ["python3", "weather_bot.py"]
