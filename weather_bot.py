@@ -10,7 +10,7 @@ WEATHER_API_KEY =  os.getenv("WEATHER_API")
 
 
 bot = telebot.TeleBot(BOT_TOKEN)
-app = Flask(name)
+app = Flask(__name__)
 
 # === Данные городов ===
 CITIES = {
